@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
 import { ToastService } from '@shared/services/toast.service';
@@ -23,21 +24,28 @@ import { ToastService } from '@shared/services/toast.service';
     MatCheckboxModule,
     MatProgressSpinnerModule,
     MatCardModule,
+    MatIconModule,
     RouterModule
   ],
   template: `
     <div class="login-container">
       <mat-card class="login-card">
         <mat-card-header>
-          <mat-card-title>Kekehyu Hotel</mat-card-title>
-          <mat-card-subtitle>Guest Registration System</mat-card-subtitle>
+          <div class="hotel-header">
+            <mat-icon class="hotel-icon">hotel</mat-icon>
+            <div class="header-text">
+              <mat-card-title>Kekehyu Hotel</mat-card-title>
+              <mat-card-subtitle>Guest Registration System</mat-card-subtitle>
+            </div>
+          </div>
         </mat-card-header>
 
         <mat-card-content>
-          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-            <mat-form-field class="full-width">
-              <mat-label>Email</mat-label>
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+            <mat-form-field class="full-width" appearance="outline">
+              <mat-label>Email Address</mat-label>
               <input matInput type="email" formControlName="email" required />
+              <mat-icon matPrefix>email</mat-icon>
               @if (emailControl?.invalid && emailControl?.touched) {
                 <mat-error>
                   @if (emailControl?.hasError('required')) {
@@ -50,9 +58,10 @@ import { ToastService } from '@shared/services/toast.service';
               }
             </mat-form-field>
 
-            <mat-form-field class="full-width">
+            <mat-form-field class="full-width" appearance="outline">
               <mat-label>Password</mat-label>
               <input matInput type="password" formControlName="password" required />
+              <mat-icon matPrefix>lock</mat-icon>
               @if (passwordControl?.invalid && passwordControl?.touched) {
                 <mat-error>Password is required</mat-error>
               }
@@ -64,24 +73,42 @@ import { ToastService } from '@shared/services/toast.service';
             </div>
 
             @if (errorMessage) {
-              <div class="error-message">{{ errorMessage }}</div>
+              <div class="error-message">
+                <mat-icon>error_outline</mat-icon>
+                <span>{{ errorMessage }}</span>
+              </div>
             }
 
             <button 
               mat-raised-button 
               color="primary" 
               type="submit"
-              class="full-width"
-              [disabled]="isLoading"
+              class="login-button"
+              [disabled]="isLoading || loginForm.invalid"
             >
               @if (isLoading) {
-                <mat-spinner diameter="20"></mat-spinner>
-                Logging in...
+                <mat-icon class="spinner-icon">sync</mat-icon>
+                <span>Logging in...</span>
               } @else {
-                Login
+                <mat-icon>login</mat-icon>
+                <span>Login</span>
               }
             </button>
           </form>
+
+          <div class="divider">
+            <span>Don't have an account?</span>
+          </div>
+
+          <button 
+            mat-stroked-button 
+            color="primary"
+            routerLink="/auth/register"
+            class="full-width"
+          >
+            <mat-icon>person_add</mat-icon>
+            <span>Create Account</span>
+          </button>
         </mat-card-content>
       </mat-card>
     </div>
@@ -195,13 +222,23 @@ export class LoginComponent implements OnInit {
     this.errorMessage = '';
     this.cdr.markForCheck();
 
-    const credentials = this.loginForm.value;
+    // Extract only email and password - don't send rememberMe to backend
+    const credentials = {
+      email: this.loginForm.value.email,
+      password: this.loginForm.value.password
+    };
     console.log('Sending login request:', credentials);
 
     this.authService.login(credentials).subscribe({
       next: (response) => {
         this.isLoading = false;
         this.cdr.markForCheck();
+        
+        // Handle rememberMe locally if needed
+        if (this.loginForm.value.rememberMe) {
+          localStorage.setItem('rememberEmail', this.loginForm.value.email);
+        }
+        
         this.toastService.success('Login successful!');
         
         if (response.user.role === 'ADMIN') {
@@ -216,7 +253,7 @@ export class LoginComponent implements OnInit {
         
         if (error.status === 400) {
           console.error('400 Bad Request. Backend response:', error.error);
-          message = error.error?.message || 'Invalid request format. Check console for details.';
+          message = error.error?.message || 'Invalid email or password format.';
         } else if (error.status === 401) {
           message = 'Invalid email or password';
         } else if (error.status === 429) {
