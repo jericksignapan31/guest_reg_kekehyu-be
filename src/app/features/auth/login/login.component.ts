@@ -87,11 +87,15 @@ import { ToastService } from '@shared/services/toast.service';
               [disabled]="isLoading || loginForm.invalid"
             >
               @if (isLoading) {
-                <mat-icon class="spinner-icon">sync</mat-icon>
-                <span>Logging in...</span>
+                <ng-container>
+                  <mat-icon class="spinner-icon">sync</mat-icon>
+                  <span>Logging in...</span>
+                </ng-container>
               } @else {
-                <mat-icon>login</mat-icon>
-                <span>Login</span>
+                <ng-container>
+                  <mat-icon>login</mat-icon>
+                  <span>Login</span>
+                </ng-container>
               }
             </button>
           </form>
@@ -106,8 +110,10 @@ import { ToastService } from '@shared/services/toast.service';
             routerLink="/auth/register"
             class="full-width"
           >
-            <mat-icon>person_add</mat-icon>
-            <span>Create Account</span>
+            <ng-container>
+              <mat-icon>person_add</mat-icon>
+              <span>Create Account</span>
+            </ng-container>
           </button>
         </mat-card-content>
       </mat-card>
@@ -231,6 +237,9 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(credentials).subscribe({
       next: (response) => {
+        console.log('[Login] Response received:', response);
+        console.log('[Login] Token stored:', localStorage.getItem('accessToken') ? 'Yes' : 'No');
+        
         this.isLoading = false;
         this.cdr.markForCheck();
         
@@ -251,11 +260,19 @@ export class LoginComponent implements OnInit {
         this.isLoading = false;
         let message = 'An error occurred. Please try again.';
         
-        if (error.status === 400) {
+        console.error('[Login] Error Response:', {
+          status: error.status,
+          message: error.message,
+          error: error.error
+        });
+        
+        if (error.status === 0) {
+          message = 'Cannot connect to backend server (localhost:3001). Is it running?';
+        } else if (error.status === 400) {
           console.error('400 Bad Request. Backend response:', error.error);
           message = error.error?.message || 'Invalid email or password format.';
         } else if (error.status === 401) {
-          message = 'Invalid email or password';
+          message = 'Invalid email or password. Please check your credentials.';
         } else if (error.status === 429) {
           message = 'Too many login attempts. Please try again later.';
         } else if (error.error?.message) {

@@ -10,10 +10,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RouterModule } from '@angular/router';
 import { AdminService } from '@core/services/admin.service';
 import { ToastService } from '@shared/services/toast.service';
 import { FrontDeskUser } from '@core/models';
+import { EditUserDialogComponent } from './edit-user-dialog.component';
+import { UserActivityComponent } from './user-activity.component';
 
 @Component({
   selector: 'app-users',
@@ -30,6 +33,7 @@ import { FrontDeskUser } from '@core/models';
     MatCardModule,
     MatMenuModule,
     MatSlideToggleModule,
+    MatDialogModule,
     RouterModule
   ],
   template: `
@@ -41,7 +45,7 @@ import { FrontDeskUser } from '@core/models';
 
       <div class="actions">
         <mat-form-field>
-          <mat-label>Search by name or email</mat-label>
+          <mat-label>Search by name, email or role</mat-label>
           <input matInput [(ngModel)]="searchTerm" (keyup)="onSearchChange()" />
         </mat-form-field>
 
@@ -73,17 +77,27 @@ import { FrontDeskUser } from '@core/models';
                 <td mat-cell *matCellDef="let element">{{ element.email }}</td>
               </ng-container>
 
+              <!-- Role -->
+              <ng-container matColumnDef="role">
+                <th mat-header-cell *matHeaderCellDef>Role</th>
+                <td mat-cell *matCellDef="let element">
+                  <span class="role-badge" [ngClass]="element.role?.toLowerCase() || ''">
+                    {{ element.role || 'N/A' }}
+                  </span>
+                </td>
+              </ng-container>
+
               <!-- Contact -->
               <ng-container matColumnDef="contact">
                 <th mat-header-cell *matHeaderCellDef>Contact</th>
-                <td mat-cell *matCellDef="let element">{{ element.contactNumber }}</td>
+                <td mat-cell *matCellDef="let element">{{ element.contactNumber || 'N/A' }}</td>
               </ng-container>
 
               <!-- Status -->
               <ng-container matColumnDef="status">
                 <th mat-header-cell *matHeaderCellDef>Status</th>
                 <td mat-cell *matCellDef="let element">
-                  <span class="status" [ngClass]="element.status">
+                  <span class="status-badge" [ngClass]="element.status">
                     {{ element.status | uppercase }}
                   </span>
                 </td>
@@ -105,9 +119,13 @@ import { FrontDeskUser } from '@core/models';
                     <mat-icon>more_vert</mat-icon>
                   </button>
                   <mat-menu #menu="matMenu">
+                    <button mat-menu-item (click)="editUser(element)">
+                      <mat-icon>edit</mat-icon>
+                      <span>Edit</span>
+                    </button>
                     <button mat-menu-item [routerLink]="['/admin/users', element.id, 'stats']">
                       <mat-icon>assessment</mat-icon>
-                      <span>View Stats</span>
+                      <span>View Activity</span>
                     </button>
                     <button mat-menu-item (click)="toggleLockUser(element)">
                       <mat-icon>{{ element.status === 'active' ? 'lock' : 'lock_open' }}</mat-icon>
@@ -143,6 +161,7 @@ import { FrontDeskUser } from '@core/models';
     .users-container {
       max-width: 1200px;
       margin: 0 auto;
+      padding: 1rem;
     }
 
     .header {
@@ -189,7 +208,25 @@ import { FrontDeskUser } from '@core/models';
       background-color: #f5f5f5;
     }
 
-    .status {
+    .role-badge {
+      padding: 0.35rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-block;
+
+      &.admin {
+        background-color: #e3f2fd;
+        color: #1565c0;
+      }
+
+      &.frontdesk {
+        background-color: #f3e5f5;
+        color: #6a1b9a;
+      }
+    }
+
+    .status-badge {
       padding: 0.5rem 1rem;
       border-radius: 20px;
       font-size: 0.75rem;
@@ -248,10 +285,11 @@ import { FrontDeskUser } from '@core/models';
 export class UsersComponent implements OnInit {
   private adminService = inject(AdminService);
   private toastService = inject(ToastService);
+  private dialog = inject(MatDialog);
 
   users: FrontDeskUser[] = [];
   filteredUsers: FrontDeskUser[] = [];
-  displayedColumns = ['name', 'email', 'contact', 'status', 'lastLogin', 'actions'];
+  displayedColumns = ['name', 'email', 'role', 'contact', 'status', 'lastLogin', 'actions'];
 
   isLoading = true;
   searchTerm = '';
@@ -280,30 +318,38 @@ export class UsersComponent implements OnInit {
       (u) =>
         u.firstName.toLowerCase().includes(term) ||
         u.lastName.toLowerCase().includes(term) ||
-        u.email.toLowerCase().includes(term)
+        u.email.toLowerCase().includes(term) ||
+        (u.role && u.role.toLowerCase().includes(term))
     );
   }
 
+  editUser(user: FrontDeskUser): void {
+    this.dialog.open(EditUserDialogComponent, {
+      width: '500px',
+      data: user,
+      disableClose: false
+    });
+  }
+
   toggleLockUser(user: FrontDeskUser): void {
-    const action = user.status === 'active' ? 'lock' : 'unlock';
     if (user.status === 'active') {
       this.adminService.lockUser(user.id).subscribe({
         next: () => {
-          this.toastService.success(`User locked successfully`);
+          this.toastService.success('User locked successfully');
           this.loadUsers();
         },
         error: () => {
-          this.toastService.error(`Failed to lock user`);
+          this.toastService.error('Failed to lock user');
         }
       });
     } else {
       this.adminService.unlockUser(user.id).subscribe({
         next: () => {
-          this.toastService.success(`User unlocked successfully`);
+          this.toastService.success('User unlocked successfully');
           this.loadUsers();
         },
         error: () => {
-          this.toastService.error(`Failed to unlock user`);
+          this.toastService.error('Failed to unlock user');
         }
       });
     }

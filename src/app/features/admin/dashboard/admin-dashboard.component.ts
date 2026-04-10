@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatGridListModule } from '@angular/material/grid-list';
@@ -8,12 +8,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { RouterModule } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { AdminService } from '@core/services/admin.service';
 import { DashboardStats, Transaction } from '@core/models';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     MatCardModule,
@@ -291,6 +293,7 @@ import { DashboardStats, Transaction } from '@core/models';
 })
 export class AdminDashboardComponent implements OnInit {
   private adminService = inject(AdminService);
+  private cdr = inject(ChangeDetectorRef);
 
   isLoading = true;
   stats: DashboardStats = {
@@ -305,26 +308,25 @@ export class AdminDashboardComponent implements OnInit {
   displayedColumns = ['userName', 'action', 'timestamp'];
 
   ngOnInit(): void {
-    this.loadDashboardData();
+    // Delay dashboard data loading to avoid ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => this.loadDashboardData(), 0);
   }
 
   private loadDashboardData(): void {
-    this.adminService.getDashboardStats().subscribe({
-      next: (data) => {
-        this.stats = data;
+    forkJoin({
+      stats: this.adminService.getDashboardStats(),
+      transactions: this.adminService.getTransactions(1, 10)
+    }).subscribe({
+      next: (result) => {
+        this.stats = result.stats;
+        this.recentTransactions = result.transactions.data.slice(0, 5);
+        this.isLoading = false;
+        this.cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
+        console.error('[AdminDashboard] Error loading data:', err);
         this.isLoading = false;
-      }
-    });
-
-    this.adminService.getTransactions(1, 10).subscribe({
-      next: (data) => {
-        this.recentTransactions = data.data.slice(0, 5);
-        this.isLoading = false;
-      },
-      error: () => {
-        this.isLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }

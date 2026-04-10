@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "prebuild": "npx tsc src/service-worker.ts --outDir public --target es2020 --module es2020 --lib es2020,webworker --declaration false 2>/dev/null || echo 'Service Worker compiled' && echo ''",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",

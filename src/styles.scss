@@ -1,6 +1,12 @@
 /* Material Theme */
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 
+/* Mobile-First Responsive Design */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
 /* Global Styles */
 * {
   margin: 0;
@@ -13,11 +19,14 @@ html, body {
   font-family: 'Roboto', sans-serif;
   background-color: #fafafa;
   color: #333;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 app-root {
   display: block;
   height: 100%;
+  width: 100%;
 }
 
 /* Custom Material Theme Colors */
@@ -29,6 +38,20 @@ app-root {
   --error-color: #c62828;
   --warning-color: #f57c00;
   --info-color: #1976d2;
+  
+  /* Responsive spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+}
+
+/* PWA Status Bar */
+body {
+  background-color: white;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 /* Toast Notifications */
@@ -55,22 +78,37 @@ app-root {
 /* Form Styles */
 mat-form-field {
   width: 100%;
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing-md);
+}
+
+input,
+textarea,
+select {
+  font-size: 16px; /* Prevents zoom on iOS */
+  font-family: 'Roboto', sans-serif;
 }
 
 /* Button Styles */
 button {
   font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  
+  &:active {
+    opacity: 0.8;
+  }
 }
 
 /* Table Styles */
 table {
   width: 100%;
+  border-collapse: collapse;
 }
 
 /* Card Styles */
 mat-card {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
 
   &:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
@@ -113,29 +151,107 @@ mat-spinner {
 .error-message {
   background-color: #ffebee;
   color: var(--error-color);
-  padding: 12px;
+  padding: var(--spacing-md);
   border-radius: 4px;
   border-left: 4px solid var(--error-color);
+  margin-bottom: var(--spacing-md);
+  animation: slideInDown 0.3s ease;
 }
 
 .success-message {
   background-color: #e8f5e9;
   color: var(--success-color);
-  padding: 12px;
+  padding: var(--spacing-md);
   border-radius: 4px;
   border-left: 4px solid var(--success-color);
+  margin-bottom: var(--spacing-md);
+  animation: slideInDown 0.3s ease;
 }
 
 .warning-message {
   background-color: #fff3e0;
   color: var(--warning-color);
-  padding: 12px;
+  padding: var(--spacing-md);
   border-radius: 4px;
   border-left: 4px solid var(--warning-color);
+  margin-bottom: var(--spacing-md);
+  animation: slideInDown 0.3s ease;
 }
 
-/* Responsive Breakpoints */
-@media (max-width: 768px) {
+/* Animations */
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Container Queries for Responsive Components */
+@supports (container-type: inline-size) {
+  .responsive-container {
+    container-type: inline-size;
+  }
+}
+
+/* Tablet Styles (768px and up) */
+@media (min-width: 768px) {
+  html {
+    font-size: 17px;
+  }
+
+  :root {
+    --spacing-md: 1.25rem;
+    --spacing-lg: 2rem;
+  }
+
+  mat-form-field {
+    margin-bottom: 1.25rem;
+  }
+}
+
+/* Desktop Styles (1024px and up) */
+@media (min-width: 1024px) {
+  html {
+    font-size: 18px;
+  }
+
+  :root {
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2.5rem;
+  }
+
+  mat-form-field {
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Extra Large Screens (1440px and up) */
+@media (min-width: 1440px) {
+  html {
+    font-size: 18px;
+  }
+
+  :root {
+    --spacing-md: 2rem;
+    --spacing-lg: 3rem;
+  }
+}
+
+/* Mobile Portrait (max-width: 480px) */
+@media (max-width: 480px) {
   body {
     font-size: 14px;
   }
@@ -143,13 +259,155 @@ mat-spinner {
   mat-form-field {
     margin-bottom: 0.75rem;
   }
+
+  mat-card {
+    margin-bottom: var(--spacing-md);
+    border-radius: 6px;
+  }
+
+  button {
+    padding: 12px 16px !important;
+  }
+
+  .error-message,
+  .success-message,
+  .warning-message {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 14px;
+  }
 }
 
-@media (max-width: 480px) {
+/* Mobile Landscape (max-height: 500px) */
+@media (max-height: 500px) and (orientation: landscape) {
   body {
     font-size: 12px;
   }
 
+  mat-form-field {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Tablet Portrait (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  body {
+    font-size: 15px;
+  }
+
+  mat-form-field {
+    margin-bottom: 1rem;
+  }
+}
+
+/* High DPI Screens */
+@media (min-device-pixel-ratio: 2) {
+  /* Optimize for retina displays */
+  body {
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #121212;
+    color: #e0e0e0;
+  }
+
+  .error-message {
+    background-color: #5f2c2c;
+    color: #ffb4b4;
+  }
+
+  .success-message {
+    background-color: #2d5f2d;
+    color: #b4ffb4;
+  }
+
+  .warning-message {
+    background-color: #5f4c2d;
+    color: #ffe4b4;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background-color: white;
+  }
+
+  button,
+  a[role="button"],
+  mat-toolbar {
+    display: none;
+  }
+
+  mat-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}
+
+/* Utility Classes */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+.responsive-grid {
+  display: grid;
+  gap: var(--spacing-md);
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.hidden-mobile {
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.hidden-desktop {
+  @media (min-width: 769px) {
+    display: none;
+  }
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.m-auto {
+  margin: auto;
+}
+
+/* Large Desktop (1024px+) */
+@media (min-width: 1024px) {
   mat-card {
     padding: 12px;
   }

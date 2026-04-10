@@ -111,7 +111,12 @@ export class AuthService {
 
   getAccessToken(): string | null {
     if (!isPlatformBrowser(this.platformId)) return null;
-    return localStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken');
+    console.log('[AuthService] getAccessToken called:', {
+      hasToken: !!token,
+      tokenPreview: token ? token.substring(0, 20) + '...' : 'null'
+    });
+    return token;
   }
 
   getRefreshToken(): string | null {
@@ -125,10 +130,22 @@ export class AuthService {
   }
 
   private setAuthState(response: AuthLoginResponse): void {
+    console.log('[AuthService] setAuthState called with:', {
+      hasAccessToken: !!response.accessToken,
+      tokenPreview: response.accessToken?.substring(0, 20) + '...',
+      user: response.user
+    });
+
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('accessToken', response.accessToken);
       localStorage.setItem('refreshToken', response.refreshToken);
       localStorage.setItem('userRole', response.user.role);
+      
+      console.log('[AuthService] Tokens stored in localStorage:', {
+        accessToken: localStorage.getItem('accessToken')?.substring(0, 20) + '...',
+        refreshToken: localStorage.getItem('refreshToken')?.substring(0, 20) + '...',
+        userRole: localStorage.getItem('userRole')
+      });
     }
 
     this.authStateSubject.next({
