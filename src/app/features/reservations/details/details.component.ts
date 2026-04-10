@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -13,6 +13,7 @@ import { Reservation } from '@core/models';
 @Component({
   selector: 'app-reservation-details',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     RouterModule,
@@ -429,6 +430,7 @@ export class ReservationDetailsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private reservationService = inject(ReservationService);
   private toastService = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
 
   reservation: Reservation | null = null;
   isLoading = true;
@@ -445,10 +447,12 @@ export class ReservationDetailsComponent implements OnInit {
       next: (data) => {
         this.reservation = data;
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.isLoading = false;
         this.toastService.error('Failed to load reservation');
+        this.cdr.markForCheck();
       }
     });
   }

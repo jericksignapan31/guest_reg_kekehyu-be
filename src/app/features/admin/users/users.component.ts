@@ -16,6 +16,7 @@ import { AdminService } from '@core/services/admin.service';
 import { ToastService } from '@shared/services/toast.service';
 import { FrontDeskUser } from '@core/models';
 import { EditUserDialogComponent } from './edit-user-dialog.component';
+import { CreateUserDialogComponent } from './create-user-dialog.component';
 import { UserActivityComponent } from './user-activity.component';
 
 @Component({
@@ -49,7 +50,7 @@ import { UserActivityComponent } from './user-activity.component';
           <input matInput [(ngModel)]="searchTerm" (keyup)="onSearchChange()" />
         </mat-form-field>
 
-        <button mat-raised-button color="primary" routerLink="/auth/register">
+        <button mat-raised-button color="primary" (click)="createUser()">
           <mat-icon>person_add</mat-icon>
           Create New User
         </button>
@@ -148,7 +149,7 @@ import { UserActivityComponent } from './user-activity.component';
             <mat-icon>people</mat-icon>
             <h2>No Users Found</h2>
             <p>Create a new user account to get started.</p>
-            <button mat-raised-button color="primary" routerLink="/auth/register">
+            <button mat-raised-button color="primary" (click)="createUser()">
               <mat-icon>person_add</mat-icon>
               Create New User
             </button>
@@ -328,6 +329,17 @@ export class UsersComponent implements OnInit {
       width: '500px',
       data: user,
       disableClose: false
+    });
+  }
+
+  createUser(): void {
+    this.dialog.open(CreateUserDialogComponent, {
+      width: '500px',
+      disableClose: false
+    }).afterClosed().subscribe((result) => {
+      if (result) {
+        this.loadUsers();
+      }
     });
   }
 

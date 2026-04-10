@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -20,6 +20,7 @@ import { Reservation } from '@core/models';
 @Component({
   selector: 'app-my-bookings',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     FormsModule,
@@ -271,6 +272,7 @@ import { Reservation } from '@core/models';
 export class MyBookingsComponent implements OnInit {
   private reservationService = inject(ReservationService);
   private toastService = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
 
   reservations: Reservation[] = [];
   filteredReservations: Reservation[] = [];
@@ -292,10 +294,12 @@ export class MyBookingsComponent implements OnInit {
         this.reservations = data;
         this.filteredReservations = data;
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: (error) => {
         this.isLoading = false;
         this.toastService.error('Failed to load bookings');
+        this.cdr.markForCheck();
       }
     });
   }

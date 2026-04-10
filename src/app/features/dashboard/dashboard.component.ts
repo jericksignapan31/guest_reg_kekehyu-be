@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatGridListModule } from '@angular/material/grid-list';
@@ -13,6 +13,7 @@ import { ReservationStats } from '@core/models';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     MatCardModule,
@@ -237,6 +238,7 @@ import { ReservationStats } from '@core/models';
 export class DashboardComponent implements OnInit {
   private reservationService = inject(ReservationService);
   private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
 
   isLoading = true;
   stats: ReservationStats = {
@@ -255,9 +257,11 @@ export class DashboardComponent implements OnInit {
       next: (data) => {
         this.stats = data;
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.isLoading = false;
+        this.cdr.markForCheck();
         // Show toast error
       }
     });

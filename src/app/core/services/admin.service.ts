@@ -56,4 +56,16 @@ export class AdminService {
   updateUser(userId: string, data: Partial<FrontDeskUser>): Observable<FrontDeskUser> {
     return this.http.put<FrontDeskUser>(`${this.API_URL}/users/${userId}`, data);
   }
+
+  createUser(userData: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    contactNumber?: string;
+    role: string;
+    status: string;
+  }): Observable<FrontDeskUser> {
+    return this.http.post<FrontDeskUser>(`${this.API_URL}/users`, userData);
+  }
 }

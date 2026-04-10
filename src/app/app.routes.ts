@@ -112,6 +112,13 @@ export const routes: Routes = [
         ]
       },
 
+      // Users Route (for all authenticated users)
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./features/admin/users/users.component').then((m) => m.UsersComponent)
+      },
+
       // Profile Route
       {
         path: 'profile',

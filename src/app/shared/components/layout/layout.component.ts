@@ -62,7 +62,7 @@ import { ToastService } from '@shared/services/toast.service';
             </mat-list-item>
             <mat-list-item routerLink="/admin/users" routerLinkActive="active">
               <mat-icon matListItemIcon>people</mat-icon>
-              <span matListItemTitle>Users</span>
+              <span matListItemTitle>Manage Users</span>
             </mat-list-item>
             <mat-list-item routerLink="/admin/transactions" routerLinkActive="active">
               <mat-icon matListItemIcon>history</mat-icon>
@@ -78,10 +78,6 @@ import { ToastService } from '@shared/services/toast.service';
               <mat-icon matListItemIcon>dashboard</mat-icon>
               <span matListItemTitle>Dashboard</span>
             </mat-list-item>
-            <mat-list-item routerLink="/reservations/register" routerLinkActive="active">
-              <mat-icon matListItemIcon>person_add</mat-icon>
-              <span matListItemTitle>New Registration</span>
-            </mat-list-item>
             <mat-list-item routerLink="/reservations/my-bookings" routerLinkActive="active">
               <mat-icon matListItemIcon>event_note</mat-icon>
               <span matListItemTitle>My Bookings</span>
@@ -89,6 +85,10 @@ import { ToastService } from '@shared/services/toast.service';
             <mat-list-item routerLink="/reservations/statistics" routerLinkActive="active">
               <mat-icon matListItemIcon>bar_chart</mat-icon>
               <span matListItemTitle>Statistics</span>
+            </mat-list-item>
+            <mat-list-item routerLink="/users" routerLinkActive="active">
+              <mat-icon matListItemIcon>people</mat-icon>
+              <span matListItemTitle>Users</span>
             </mat-list-item>
           }
         </mat-nav-list>
